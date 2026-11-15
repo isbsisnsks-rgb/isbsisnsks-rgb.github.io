@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Black Side</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,600;1,700;1,800&family=Manrope:wght@400;500;600&display=swap">
+<style>
+:root{color-scheme:dark;--bg:#000;--ink:#f3f1ec;--dim:#9b9ba6;--line:#2a2a2a;--glow:#eeeef4;--err:#ff7a7a;--ok:#9be8b5;
+--display:"Exo 2","Arial Black",system-ui,sans-serif;--body:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--body);overflow:hidden;-webkit-tap-highlight-color:transparent}
+.grid,.halo{position:fixed;inset:0;pointer-events:none}
+.grid{background-image:radial-gradient(circle,#fff 1px,transparent 1.5px);background-size:26px 26px;opacity:.5;
+-webkit-mask-image:radial-gradient(circle 190px at var(--x,50%) var(--y,28%),#000,transparent);mask-image:radial-gradient(circle 190px at var(--x,50%) var(--y,28%),#000,transparent)}
+.halo{background:radial-gradient(circle 260px at var(--x,50%) var(--y,28%),rgba(238,238,244,.16),transparent 70%)}
+.topfade{position:fixed;top:0;left:0;right:0;height:calc(env(safe-area-inset-top,0px) + 72px);background:linear-gradient(#000 62%,rgba(0,0,0,0));pointer-events:none;z-index:1}
+.brand{position:fixed;top:calc(env(safe-area-inset-top,0px) + 22px);left:0;right:0;text-align:center;font-family:var(--display);font-weight:800;font-size:1.5rem;letter-spacing:.14em;text-indent:.14em;pointer-events:none;z-index:2;
+background:linear-gradient(100deg,#4a4a4a 25%,#fff 42%,var(--glow) 50%,#fff 58%,#4a4a4a 75%);background-size:260% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+animation:sheen 5s linear infinite,drop 1s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes sheen{from{background-position:130% 0}to{background-position:-130% 0}}
+@keyframes drop{from{opacity:0;letter-spacing:.5em;filter:blur(6px)}to{opacity:1;letter-spacing:.14em;filter:none}}
+main{position:relative;height:100%;max-width:360px;margin:0 auto;padding:76px 26px 24px;display:flex;flex-direction:column;overflow-y:auto}
+.view{display:none;margin:auto 0}
+.view.on{display:flex;flex-direction:column}
+.view.on>*{animation:rise .75s cubic-bezier(.2,.8,.2,1) backwards}
+.view.on>:nth-child(2){animation-delay:.08s}.view.on>:nth-child(3){animation-delay:.16s}.view.on>:nth-child(4){animation-delay:.24s}.view.on>:nth-child(5){animation-delay:.32s}.view.on>:nth-child(6){animation-delay:.4s}
+@keyframes rise{from{opacity:0;transform:translateY(34px)}to{opacity:1;transform:none}}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(1.7rem,8.2vw,2.3rem);line-height:1.1;letter-spacing:-.02em;margin:0 0 12px;overflow-wrap:normal}
+.sub{margin:0 0 26px;color:var(--dim);font-size:.95rem;line-height:1.6;overflow-wrap:anywhere}
+.pane h1{font-size:clamp(1.5rem,7.4vw,2.1rem);letter-spacing:-.01em;white-space:nowrap;background:linear-gradient(100deg,#fff 45%,var(--glow));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+#hi{white-space:normal;overflow-wrap:anywhere}
+.sub b{color:var(--ink);font-weight:600;word-break:break-all}
+.field{position:relative;margin-bottom:18px}
+.field input{width:100%;background:none;border:0;border-bottom:1px solid var(--line);color:var(--ink);font:500 1.05rem var(--body);padding:20px 52px 8px 0;border-radius:0;outline:none;transition:border-color .25s}
+.field label{position:absolute;left:0;top:20px;color:var(--dim);font-size:1rem;pointer-events:none;transform-origin:left top;transition:transform .22s ease,color .22s}
+.field input:focus+label,.field input:not(:placeholder-shown)+label{transform:translateY(-18px) scale(.78);color:var(--glow)}
+.field input:focus{border-color:var(--glow)}
+.field.bad input{border-color:var(--err)}
+.msg{display:block;min-height:1.1em;margin-top:7px;font-size:.8rem;color:var(--err)}
+.eye{position:absolute;right:0;top:16px;background:none;border:0;color:var(--dim);font:600 .8rem var(--body);padding:6px 0 6px 8px;cursor:pointer}
+.go{position:relative;overflow:hidden;width:100%;margin-top:4px;padding:15px;border-radius:999px;border:0;background:var(--ink);color:#000;font:600 1rem var(--body);cursor:pointer;transition:transform .15s,background .25s,opacity .25s}
+.go:active{transform:scale(.98)}.go[disabled]{opacity:.6}
+.go::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 35%,rgba(110,120,255,.35) 50%,transparent 65%);transform:translateX(-130%);animation:shine 3.4s ease-in-out 1.8s infinite}
+@keyframes shine{60%,100%{transform:translateX(130%)}}
+.row{display:flex;justify-content:space-between;gap:12px;margin-top:20px;font-size:.88rem;color:var(--dim)}
+.link{background:none;border:0;padding:0 0 1px;font:inherit;color:var(--ink);border-bottom:1px solid var(--line);cursor:pointer}
+.link[disabled]{color:var(--dim);cursor:default}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--glow);outline-offset:3px;border-radius:6px}
+.or{display:flex;align-items:center;gap:12px;margin:22px 0 14px;color:var(--dim);font-size:.8rem}
+.or i{flex:1;height:1px;background:var(--line)}
+.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.ghost::after{display:none}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:0}
+.g{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:800 .8rem var(--display);color:#000;background:conic-gradient(from 200deg,#ff8a8a,#ffe08a,#9be8b5,#8ab4ff,#ff8a8a)}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.me{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.av{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font:800 1.2rem var(--display);color:#000;background:conic-gradient(from 200deg,#fff,var(--glow),#fff);overflow:hidden;flex:none}
+.av img{width:100%;height:100%;object-fit:cover}
+.me small{display:block;color:var(--dim);font-size:.8rem}.me span{word-break:break-all;font-weight:600}
+.card{border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:22px;font-size:.9rem;color:var(--dim);line-height:1.6}
+.card b{color:var(--ok);font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translate(-50%,20px);width:max-content;max-width:min(92vw,340px);background:#151515;border:1px solid var(--line);color:var(--ink);padding:12px 16px;border-radius:14px;font-size:.85rem;line-height:1.4;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;z-index:5}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+[hidden]{display:none!important}
+#v-home{margin:0 0 auto;padding-bottom:112px}
+.pane{display:flex;flex-direction:column}
+.empty{color:var(--dim);font-size:.92rem;text-align:center;margin:0 0 14px;padding:26px 16px;border:1px dashed #33333d;border-radius:20px}
+.seg{display:flex;gap:6px;margin:16px 0 8px}
+.seg button{flex:1;padding:10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--dim);font:600 .85rem var(--body);cursor:pointer}
+.seg button.on{color:var(--ink);border-color:var(--glow)}
+.note{color:var(--dim);font-size:.78rem;line-height:1.5;margin:14px 0 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.gap{margin-top:10px}
+.ver{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 6px);font-size:.62rem;color:#444;pointer-events:none;z-index:1}
+.eyebrow{margin:0 0 8px;color:var(--glow);font-size:.85rem;font-weight:600;letter-spacing:.02em}
+.hero{display:flex;align-items:center;gap:16px;border:1px solid #2f2f2f;border-radius:22px;padding:16px;margin:4px 0 14px;background:linear-gradient(140deg,#14151b,#0a0a0c)}
+.hero strong{display:block;font:700 1.05rem var(--display);margin-bottom:3px}
+.hero small{color:var(--dim);font-size:.82rem}
+.ring{position:relative;width:64px;height:64px;flex:none}
+.ring svg{width:100%;height:100%}
+.rb,.rf{fill:none;stroke-width:4}.rb{stroke:var(--line)}
+.rf{stroke:var(--glow);stroke-linecap:round;stroke-dasharray:113.1;stroke-dashoffset:113.1;transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font:800 .85rem var(--display)}
+.steps{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:8px}
+.steps li{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:.9rem}
+.steps .dot{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--dim);display:grid;place-items:center;flex:none;font-size:.7rem}
+.steps li.done{color:var(--dim)}
+.steps li.done .dot{background:var(--ok);border-color:var(--ok);color:#000}
+.steps li button{margin-left:auto;background:none;border:0;color:var(--glow);font:600 .8rem var(--body);cursor:pointer;padding:0}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
+.tile small{display:block;color:var(--dim);font-size:.72rem;margin-bottom:6px}
+.tile b{display:block;font:800 .95rem var(--display);letter-spacing:.01em;overflow-wrap:anywhere}
+.nav{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:0;right:0;width:min(360px,calc(100% - 32px));margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;border:1px solid #2f2f2f;border-radius:26px;background:rgba(14,14,16,.78);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 12px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06)}
+.ind{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/4);border-radius:20px;background:linear-gradient(160deg,#fff,#e4e4ea);box-shadow:0 6px 20px rgba(238,238,244,.25);transition:transform .38s cubic-bezier(.3,1.3,.5,1)}
+.nav button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;color:var(--dim);font:600 .68rem var(--body);padding:9px 0 8px;cursor:pointer;transition:color .25s}
+.nav button.on{color:#000}
+.nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pm{position:relative;overflow:hidden;border-radius:20px;padding:16px;margin-bottom:12px;border:1px solid #2f2f2f;background:linear-gradient(140deg,#17181d,#0b0b0d 60%,#15172a)}
+.pm::after{content:"";position:absolute;right:-30px;top:-30px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(238,238,244,.22),transparent 70%);pointer-events:none}
+.pm .top,.pm .num,.pm .bot{position:relative;z-index:1}
+.pm .top{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;font-weight:600;margin-bottom:18px}
+.pm .num{font:700 1.05rem var(--display);letter-spacing:.12em;margin-bottom:14px;overflow-wrap:anywhere}
+.pm .bot{display:flex;justify-content:space-between;gap:10px;font-size:.8rem;color:var(--dim)}
+.pm .bot span{overflow-wrap:anywhere}
+.gstats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.gwrap{border:1px solid var(--line);border-radius:22px;padding:8px;background:linear-gradient(140deg,#14151b,#0a0a0c)}
+#acv{display:block;width:100%;height:auto;border-radius:16px;background:#050508}
+.hist{display:flex;gap:6px;flex-wrap:wrap;min-height:26px;margin:0 0 12px}
+.hist span{font:700 .72rem var(--display);padding:5px 9px;border-radius:999px;border:1px solid var(--line);color:var(--dim)}
+.hist span.hi{color:var(--ok);border-color:#2f4a38}
+.chips{display:flex;gap:6px;margin:0 0 12px}
+.chips button{flex:1;padding:9px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--dim);font:600 .85rem var(--body);cursor:pointer}
+.chips button:active{color:var(--ink);border-color:var(--glow)}
+.go[disabled]{cursor:default}
+.sec{display:flex;justify-content:space-between;align-items:baseline;margin:26px 2px 10px;font:700 .98rem var(--display)}
+.sec small{color:var(--dim);font:500 .8rem var(--body)}
+.list{border:1px solid var(--line);border-radius:20px;background:linear-gradient(140deg,#13141a,#09090b);overflow:hidden}
+.row2{display:flex;align-items:center;gap:14px;padding:14px 16px;width:100%;background:none;border:0;color:var(--ink);font:inherit;text-align:left}
+button.row2{cursor:pointer}
+.list>.row2:not([hidden])~.row2:not([hidden]){border-top:1px solid #1e1e26}
+.row2 .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:#1a1b24;color:var(--glow);flex:none}
+.row2 .ic svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.row2 .tx{flex:1;min-width:0}.row2 .tx small{display:block;color:var(--dim);font-size:.76rem;margin-bottom:2px}.row2 .tx b{font-weight:600;font-size:.95rem;overflow-wrap:anywhere}
+.row2.danger,.row2.danger .ic{color:var(--err)}.row2.danger .ic{background:#241518}
+.plain{width:100%;background:none;border:0;outline:none;color:var(--ink);font:600 .95rem var(--body);padding:0}
+.mini{background:var(--ink);color:#000;border:0;border-radius:999px;padding:9px 16px;font:600 .85rem var(--body);cursor:pointer}
+.pm{aspect-ratio:1.7;display:flex;flex-direction:column;justify-content:space-between;padding:20px;border-radius:22px}
+.pm .top{margin:0}.pm .num{margin:0;font-size:1.15rem}
+.pm .lf{display:flex;align-items:center;gap:10px;font:700 .85rem var(--display)}
+.chip{width:38px;height:28px;border-radius:7px;background:linear-gradient(135deg,#e2dcc0,#8f8a74)}
+.pm.c0{background:linear-gradient(140deg,#262b52,#0b0b12 70%)}
+.pm.c1{background:linear-gradient(140deg,#2a2b30,#0a0a0c 70%)}
+.pm.c2{background:linear-gradient(140deg,#1d3a2f,#08100c 70%)}
+.empty b{display:block;color:var(--ink);font:700 1rem var(--display);margin-bottom:4px}
+.bal{display:flex;justify-content:space-between;align-items:flex-end;margin:4px 2px 14px}
+.bal small{display:block;color:var(--dim);font-size:.8rem;margin-bottom:4px}
+.bal b{font:800 2.2rem var(--display);letter-spacing:-.01em}
+.bal span{color:var(--dim);font-size:.85rem;margin-left:6px}
+.bal .r{text-align:right}.bal .r b{font-size:1.15rem;color:var(--ok)}
+#abet{padding-right:92px}
+.sb{position:absolute;top:12px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#14151b;color:var(--ink);font:600 1.15rem var(--body);cursor:pointer}
+.sb.m{right:42px}.sb.p{right:0}
+.bal{align-items:flex-start}
+.bal .r{padding-top:2px}.bal .r b{display:block;margin-top:10px}
+.live{flex:none}
+.gtop .hist{flex:1;min-width:0;-webkit-mask-image:linear-gradient(90deg,transparent,#000 28px);mask-image:linear-gradient(90deg,transparent,#000 28px)}
+.hist span{flex:none}
+.panel .field{margin-bottom:4px}
+.chips{margin-bottom:14px}
+.tile{background:linear-gradient(140deg,#14151b,#0a0a0c);border-color:#2a2a33}
+.hero{box-shadow:0 0 40px rgba(238,238,244,.07)}
+.quick{display:flex;align-items:center;gap:14px;margin-top:12px;border:1px solid #2f2f2f;border-radius:22px;padding:16px;background:linear-gradient(140deg,#17181d,#0b0b0d 60%,#15172a)}
+.quick div{flex:1}.quick strong{display:block;font:700 1.05rem var(--display);margin-bottom:3px}.quick small{color:var(--dim);font-size:.82rem}
+.quick .go{width:auto;margin:0;padding:12px 22px}
+.pcard{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center;border:1px solid #2f2f2f;border-radius:26px;padding:28px 18px 22px;margin:4px 0 12px;background:linear-gradient(160deg,#17181f,#0a0a0c 65%)}
+.pcard::after{content:"";position:absolute;left:50%;top:-60px;width:220px;height:220px;margin-left:-110px;border-radius:50%;background:radial-gradient(circle,rgba(238,238,244,.2),transparent 70%);pointer-events:none}
+.pcard>*{position:relative;z-index:1}
+.pcard .av{width:84px;height:84px;font-size:2rem;box-shadow:0 8px 30px rgba(238,238,244,.3)}
+.pcard h2{font:800 1.35rem var(--display);margin:16px 0 4px;overflow-wrap:anywhere}
+.pcard .em{color:var(--dim);font-size:.88rem;word-break:break-all}
+.badge{display:inline-flex;align-items:center;gap:6px;margin-top:14px;padding:6px 12px;border-radius:999px;background:rgba(155,232,181,.1);border:1px solid #2f4a38;color:var(--ok);font:600 .78rem var(--body)}
+.go.danger{color:var(--err);border-color:#4a2a2a}
+.gwrap{padding:0;overflow:hidden}
+.gtop{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px 2px}
+.live{display:flex;align-items:center;gap:8px;font:600 .8rem var(--body);color:var(--ink);white-space:nowrap}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+.live i.wait{background:var(--glow);animation:blink 1.2s infinite}
+.live i.fly{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.live i.crash{background:var(--err)}
+@keyframes blink{50%{opacity:.3}}
+.gtop .hist{margin:0;min-height:0;flex-wrap:nowrap;overflow:hidden;justify-content:flex-end}
+#acv{border-radius:0;background:transparent;aspect-ratio:340/240}
+.panel{border:1px solid var(--line);border-radius:22px;padding:16px 16px 14px;margin-top:12px;background:linear-gradient(140deg,#14151b,#0a0a0c)}
+.panel .field{margin-bottom:12px}
+.go.cash{background:var(--ok);color:#000;font-size:1.1rem;padding:18px;animation:pulse 1.2s infinite}
+.go.cash::after{display:none}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(155,232,181,.5)}70%,100%{box-shadow:0 0 0 14px rgba(155,232,181,0)}}
+.grow{display:flex;gap:10px;margin-top:12px}
+.grow .go{margin-top:0}
+#v-home.on>.pane{animation-duration:.28s;animation-delay:0s}
+@media (prefers-reduced-motion:reduce){.nav button,.ind,.rf{transition:none}.view.on>*,.brand,.go::after,.shake{animation:none}.field label,.go,.toast{transition:none}}
+
+/* ---- glass / neon-edge theme ---- */
+@keyframes drop{from{opacity:0;letter-spacing:.4em;filter:blur(6px)}to{opacity:1;letter-spacing:.06em;filter:none}}
+h1,.brand,.hero strong,.tile b,.pcard h2,.bal b,.sec,.quick strong,.pm .num,.pm .lf,.hist span,.live{font-style:italic}
+.brand{font-size:1.9rem;letter-spacing:.06em;text-indent:.06em;top:calc(env(safe-area-inset-top,0px) + 18px)}
+.topfade{height:calc(env(safe-area-inset-top,0px) + 82px)}
+main{padding-top:86px}
+.pane h1{text-align:center;font-size:clamp(1.7rem,8.4vw,2.4rem);filter:drop-shadow(0 0 10px rgba(255,255,255,.3))}
+.pane .sub{text-align:center}
+.eyebrow{display:flex;align-items:center;justify-content:center;gap:14px;letter-spacing:.26em;font-size:.8rem;font-weight:500;color:#e8e8ec;margin:0 0 8px}
+.eyebrow::before,.eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.75))}
+.eyebrow::after{transform:scaleX(-1)}
+.hero,.steps li,.tile,.quick,.pcard,.list,.panel,.gwrap,.pm,.empty,.nav{
+  background:linear-gradient(135deg,#0c0c0c,#000 62%);border:1px solid rgba(255,255,255,.34);
+  box-shadow:inset -2px -3px 5px -2px rgba(255,255,255,.7),inset 1px 1px 3px rgba(255,255,255,.18),0 0 18px rgba(255,255,255,.07)}
+.nav{background:rgba(0,0,0,.78)}
+.hero{border-radius:28px}.steps li{border-radius:22px}.tile,.quick,.list,.panel,.gwrap{border-radius:24px}
+.tile small{display:flex;align-items:center;gap:10px;font-size:.8rem;margin-bottom:10px;color:#d8d8de}
+.tile small svg{width:22px;height:22px;flex:none;fill:none;stroke:#fff;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.rf{filter:drop-shadow(0 0 4px #fff);stroke:#fff}
+.steps li.done .dot{background:#000;border-color:#fff;color:#fff;box-shadow:0 0 8px rgba(255,255,255,.55)}
+.steps li.done{color:#f0f0f4}
+.quick strong{display:flex;align-items:center;gap:10px;font-size:1.1rem}
+.quick strong svg{width:22px;height:22px;fill:#fff;stroke:#fff;stroke-width:1.2}
+.quick .go{display:flex;align-items:center;gap:6px;background:#000;color:#fff;border:1px solid rgba(255,255,255,.8);box-shadow:inset -2px -2px 5px rgba(255,255,255,.5),0 0 14px rgba(255,255,255,.2);font-style:italic}
+.quick .go::after{display:none}
+.quick .go svg{width:16px;height:16px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.go{box-shadow:0 0 18px rgba(255,255,255,.22)}
+.go.ghost{background:#000;border:1px solid rgba(255,255,255,.4);box-shadow:inset -2px -2px 5px -1px rgba(255,255,255,.5)}
+.go.cash{box-shadow:0 0 0 0 rgba(155,232,181,.5)}
+.ind{background:#050505;border:1px solid rgba(255,255,255,.85);box-shadow:inset -2px -2px 5px rgba(255,255,255,.55),0 0 14px rgba(255,255,255,.25)}
+.nav button.on{color:#fff}
+.row2 .ic,.pcard .av{box-shadow:0 0 12px rgba(255,255,255,.18)}
+.row2 .ic{background:#000;border:1px solid rgba(255,255,255,.3);color:#fff}
+.hist span.hi{box-shadow:0 0 8px rgba(155,232,181,.25)}
+</style>
+</head>
+<body>
+<div class="grid"></div><div class="halo"></div>
+<div class="topfade"></div>
+<div class="brand">Black Side</div>
+<div class="ver">v14</div>
+<div class="toast" id="toast" role="status"></div>
+<main>
+  <section class="view on" id="v-login">
+    <h1>Welcome</h1>
+    <p class="sub">Log in to your account and pick up right where you left off.</p>
+    <form data-f="login" novalidate>
+      <div class="field"><input id="le" type="email" autocomplete="email" inputmode="email" placeholder=" "><label for="le">Email</label><span class="msg"></span></div>
+      <div class="field"><input id="lp" type="password" autocomplete="current-password" placeholder=" "><label for="lp">Password</label><button type="button" class="eye" aria-label="Show password">Show</button><span class="msg"></span></div>
+      <button class="go" type="submit">Log in</button>
+    </form>
+    <div class="or"><i></i>or<i></i></div>
+    <button class="go ghost gbtn" id="gbtn" type="button"><span class="g">G</span>Continue with Google</button>
+    <div class="row"><button class="link" id="fg">Forgot password?</button><button class="link" data-go="signup">Create account</button></div>
+  </section>
+
+  <section class="view" id="v-signup">
+    <h1>Create account</h1>
+    <p class="sub">We’ll email you a link to confirm it’s you.</p>
+    <form data-f="signup" novalidate>
+      <div class="field"><input id="se" type="email" autocomplete="email" inputmode="email" placeholder=" "><label for="se">Email</label><span class="msg"></span></div>
+      <div class="field"><input id="sp" type="password" autocomplete="new-password" placeholder=" "><label for="sp">Password (6+ characters)</label><button type="button" class="eye" aria-label="Show password">Show</button><span class="msg"></span></div>
+      <button class="go" type="submit">Create account</button>
+    </form>
+    <div class="row"><span>Already registered?</span><button class="link" data-go="login">Log in</button></div>
+  </section>
+
+  <section class="view" id="v-verify">
+    <h1>Check your email</h1>
+    <p class="sub">We sent a verification link to <b id="ve"></b>. Open it, then come back and tap the button.</p>
+    <button class="go" id="vb" type="button">I’ve verified</button>
+    <span class="msg" id="vm"></span>
+    <div class="row"><button class="link" id="rs">Resend link</button><button class="link" id="other">Use another email</button></div>
+  </section>
+
+  <section class="view" id="v-home">
+    <div class="pane" id="p-dash">
+      <p class="eyebrow" id="greet">Welcome to Black Side</p>
+      <h1 id="hi">Hi</h1>
+      <div class="hero">
+        <div class="ring"><svg viewBox="0 0 44 44" aria-hidden="true"><circle class="rb" cx="22" cy="22" r="18"/><circle class="rf" id="rf" cx="22" cy="22" r="18" transform="rotate(-90 22 22)"/></svg><b id="pct">0%</b></div>
+        <div><strong id="hs">Finish setting up</strong><small id="hd"></small></div>
+      </div>
+      <ul class="steps" id="steps"></ul>
+      <div class="tiles">
+        <div class="tile"><small><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Member since</small><b id="t-since">-</b></div>
+        <div class="tile"><small><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>Last login</small><b id="t-last">-</b></div>
+        <div class="tile"><small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/></svg>Sign-in method</small><b id="t-via">-</b></div>
+        <div class="tile"><small><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M3 10.5h18"/></svg>Payment methods</small><b id="t-pay">0</b></div>
+      </div>
+      <div class="quick"><div><strong><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg>Aviator</strong><small>Play with free coins</small></div><button class="go" id="qplay" type="button">Play <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button></div>
+    </div>
+    <div class="pane" id="p-pay" hidden>
+      <h1>Payments</h1>
+      <p class="sub">Cards and UPI IDs you have saved. Details stay on this device.</p>
+      <div class="sec" style="margin-top:6px">Saved methods <small id="pcount">0 saved</small></div>
+      <div id="plist"></div>
+      <button class="go ghost" id="addbtn" type="button">+ Add payment method</button>
+      <div id="addbox" class="panel" hidden>
+        <div class="seg"><button type="button" data-t="upi" class="on">UPI</button><button type="button" data-t="card">Card</button></div>
+        <form id="addpay" novalidate>
+          <div id="f-upi">
+            <div class="field"><input id="pu" type="text" autocomplete="off" autocapitalize="none" placeholder=" "><label for="pu">UPI ID (name@bank)</label><span class="msg"></span></div>
+          </div>
+          <div id="f-card" hidden>
+            <div class="field"><input id="pn" type="text" autocomplete="cc-name" placeholder=" "><label for="pn">Name on card</label><span class="msg"></span></div>
+            <div class="field"><input id="pc" type="text" inputmode="numeric" autocomplete="cc-number" placeholder=" "><label for="pc">Card number</label><span class="msg"></span></div>
+            <div class="two">
+              <div class="field"><input id="pe" type="text" inputmode="numeric" autocomplete="cc-exp" placeholder=" "><label for="pe">MM/YY</label><span class="msg"></span></div>
+              <div class="field"><input id="pv" type="password" inputmode="numeric" maxlength="4" autocomplete="cc-csc" placeholder=" "><label for="pv">CVV</label><span class="msg"></span></div>
+            </div>
+          </div>
+          <button class="go" type="submit">Save method</button>
+        </form>
+        <p class="note">Demo only: nothing is charged. Only the card brand, last 4 digits and expiry are kept. The full number and CVV are never saved.</p>
+      </div>
+    </div>
+
+    <div class="pane" id="p-game" hidden>
+      <p class="eyebrow">Practice mode with free coins</p>
+      <h1>Aviator</h1>
+      
+      <div class="bal"><div><small>Balance</small><b id="abal">1000</b><span>coins</span></div><div class="r"><small>Best cash-out</small><b id="abest">0.00x</b></div></div>
+      <div class="gwrap">
+        <div class="gtop"><div class="live"><i id="adot" class="wait"></i><span id="astat">Place your bets</span></div><div class="hist" id="ahist" aria-label="Previous rounds"></div></div>
+        <canvas id="acv" width="340" height="240"></canvas>
+      </div>
+      <div class="panel">
+        <div class="field"><input id="abet" type="number" inputmode="numeric" min="10" step="1" value="50" placeholder=" "><label for="abet">Bet amount (coins)</label><button type="button" class="sb m" data-s="-1" aria-label="Decrease bet">−</button><button type="button" class="sb p" data-s="1" aria-label="Increase bet">+</button><span class="msg"></span></div>
+        <div class="chips" id="achips"><button type="button" data-a="min">Min</button><button type="button" data-a="half">Half</button><button type="button" data-a="dbl">Double</button><button type="button" data-a="max">Max</button></div>
+        <button class="go" id="abtn" type="button">Place bet</button>
+        <button class="go ghost gap" id="adbtn" type="button">Watch ad, get +100 coins</button>
+        <p class="note">No real money is used. Bet before takeoff, then cash out in time. <button class="link" id="areset" type="button">Reset coins</button></p>
+      </div>
+    </div>
+
+    <div class="pane" id="p-me" hidden>
+      <h1>Profile</h1>
+      <div class="pcard"><div class="av" id="av"></div><h2 id="pdn"></h2><span class="em" id="he"></span><span class="badge">✓ Email verified</span></div>
+      <div class="sec">Account</div>
+      <div class="list">
+        <div class="row2"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg></span><span class="tx"><small>Display name</small><input class="plain" id="pname" type="text" autocomplete="name" placeholder="Add your name"></span><button class="mini" id="savename" type="button">Save</button></div>
+        <div class="row2"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v6c0 4.5 3 7.5 7 9 4-1.5 7-4.5 7-9V6z"/></svg></span><span class="tx"><small>Sign-in method</small><b id="ps-via">-</b></span></div>
+        <div class="row2"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></span><span class="tx"><small>Member since</small><b id="ps-since">-</b></span></div>
+      </div>
+      <div class="sec">Security</div>
+      <div class="list">
+        <button class="row2" id="reset" type="button"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="12" r="3.5"/><path d="M11.5 12H21M17 12v3"/></svg></span><span class="tx"><b>Reset password</b><small>We email you a reset link</small></span></button>
+        <button class="row2 danger" id="out" type="button"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H5v16h5M15 8l4 4-4 4M19 12H9"/></svg></span><span class="tx"><b>Log out</b></span></button>
+      </div>
+    </div>
+
+    <nav class="nav" aria-label="Sections">
+      <span class="ind" id="ind"></span>
+      <button type="button" data-tab="dash" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4v-5H9v5H5a1 1 0 0 1-1-1z"/></svg><span>Dashboard</span></button>
+      <button type="button" data-tab="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M3 10.5h18"/></svg><span>Payments</span></button>
+      <button type="button" data-tab="game"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 20.5 4l-7 16.5-2.5-6.5z"/><path d="m11 14 9.5-10"/></svg><span>Game</span></button>
+      <button type="button" data-tab="me"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg><span>Profile</span></button>
+    </nav>
+  </section>
+</main>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendEmailVerification,sendPasswordResetEmail,updateProfile,GoogleAuthProvider,signInWithPopup,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const app=initializeApp({
+  apiKey:"AIzaSyA1ZZSIFslMnFbwx8_fJTRECzZQAHEB_pQ",
+  authDomain:"black-side-1188a.firebaseapp.com",
+  projectId:"black-side-1188a",
+  storageBucket:"black-side-1188a.firebasestorage.app",
+  messagingSenderId:"712168500051",
+  appId:"1:712168500051:web:cfe8cd5c40e653aa574fa6"
+});
+const auth=getAuth(app);
+
+const root=document.documentElement,$=(s,r)=>(r||document).querySelector(s);
+const move=(x,y)=>{root.style.setProperty("--x",x+"px");root.style.setProperty("--y",y+"px")};
+addEventListener("pointermove",e=>move(e.clientX,e.clientY));
+let touched=false;const t0=performance.now();
+addEventListener("pointerdown",()=>{touched=true});
+(function drift(n){if(!touched){const s=(n-t0)/1800;move(innerWidth*(.5+.28*Math.sin(s)),innerHeight*(.28+.08*Math.cos(s*1.3)))}requestAnimationFrame(drift)})(t0);
+
+let view="login";
+function show(v){
+  view=v;
+  document.querySelectorAll(".view").forEach(s=>s.classList.remove("on"));
+  const el=$("#v-"+v);void el.offsetWidth;el.classList.add("on");$("main").scrollTop=0;
+}
+let tt;
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("on");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("on"),4500)}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b){e.preventDefault();show(b.dataset.go)}});
+document.querySelectorAll(".eye").forEach(b=>b.addEventListener("click",()=>{
+  const i=b.parentNode.querySelector("input"),s=i.type==="password";i.type=s?"text":"password";
+  b.textContent=s?"Hide":"Show";b.setAttribute("aria-label",s?"Hide password":"Show password");
+}));
+const flag=(input,text)=>{const f=input.parentNode;f.classList.toggle("bad",!!text);$(".msg",f).textContent=text||"";return !text};
+document.querySelectorAll(".field input").forEach(i=>i.addEventListener("input",()=>flag(i,"")));
+const shake=el=>{el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake")};
+const okEmail=v=>/^\S+@\S+\.\S+$/.test(v);
+async function run(btn,text,fn){const old=btn.textContent;btn.disabled=true;btn.textContent=text;try{await fn()}finally{btn.disabled=false;btn.textContent=old}}
+function errText(e){
+  switch(e&&e.code){
+    case "auth/invalid-credential":case "auth/wrong-password":case "auth/user-not-found":return "Wrong email or password. Try again.";
+    case "auth/invalid-email":return "Enter a valid email, like name@example.com";
+    case "auth/email-already-in-use":return "This email is already registered. Log in instead.";
+    case "auth/weak-password":return "Password must be at least 6 characters";
+    case "auth/too-many-requests":return "Too many attempts. Wait a few minutes and try again.";
+    case "auth/network-request-failed":return "No connection. Check your internet and try again.";
+    case "auth/unauthorized-domain":return "This site isn’t allowed yet. Add it under Firebase → Authentication → Settings → Authorized domains.";
+    default:return "Something went wrong. Try again.";
+  }
+}
+
+// LOGIN
+$('[data-f=login]').addEventListener("submit",async e=>{
+  e.preventDefault();
+  const f=e.target,em=$("#le"),pw=$("#lp"),mail=em.value.trim();
+  if(!flag(em,okEmail(mail)?"":"Enter a valid email, like name@example.com"))return;
+  if(!flag(pw,pw.value?"":"Enter your password"))return;
+  await run($(".go",f),"Checking...",async()=>{
+    try{await signInWithEmailAndPassword(auth,mail,pw.value)}
+    catch(err){flag(err.code==="auth/invalid-email"?em:pw,errText(err));shake(f)}
+  });
+});
+
+// GOOGLE
+$("#gbtn").addEventListener("click",async e=>{
+  await run(e.currentTarget,"Opening Google...",async()=>{
+    try{await signInWithPopup(auth,new GoogleAuthProvider())}
+    catch(err){if(err.code!=="auth/popup-closed-by-user"&&err.code!=="auth/cancelled-popup-request")toast(errText(err))}
+  });
+});
+
+// FORGOT PASSWORD
+$("#fg").addEventListener("click",async()=>{
+  const em=$("#le"),mail=em.value.trim();
+  if(!flag(em,okEmail(mail)?"":"Type your email here first"))return;
+  try{await sendPasswordResetEmail(auth,mail)}catch(err){if(err.code==="auth/too-many-requests"){toast(errText(err));return}}
+  toast("If an account exists for "+mail+", a reset link is on its way.");
+});
+
+// SIGN UP -> VERIFY EMAIL
+$('[data-f=signup]').addEventListener("submit",async e=>{
+  e.preventDefault();
+  const f=e.target,em=$("#se"),pw=$("#sp"),mail=em.value.trim();
+  if(!flag(em,okEmail(mail)?"":"Enter a valid email, like name@example.com"))return;
+  if(!flag(pw,pw.value.length>=6?"":"Password must be at least 6 characters"))return;
+  await run($(".go",f),"Creating...",async()=>{
+    try{
+      const c=await createUserWithEmailAndPassword(auth,mail,pw.value);
+      try{await sendEmailVerification(c.user);cooldown()}catch(_){}
+    }catch(err){flag(err.code==="auth/email-already-in-use"||err.code==="auth/invalid-email"?em:pw,errText(err));shake(f)}
+  });
+});
+let timer;
+function cooldown(){
+  const rs=$("#rs");let n=30;rs.disabled=true;rs.textContent="Resend in 30s";clearInterval(timer);
+  timer=setInterval(()=>{n--;if(n<=0){clearInterval(timer);rs.disabled=false;rs.textContent="Resend link"}else rs.textContent="Resend in "+n+"s"},1000);
+}
+$("#rs").addEventListener("click",async()=>{
+  try{await sendEmailVerification(auth.currentUser);cooldown();toast("Link sent again. Check your inbox and spam folder.")}
+  catch(err){toast(errText(err))}
+});
+$("#vb").addEventListener("click",async e=>{
+  await run(e.currentTarget,"Checking...",async()=>{
+    try{
+      await auth.currentUser.reload();
+      if(auth.currentUser.emailVerified)route(auth.currentUser);
+      else{$("#vm").textContent="Not verified yet. Open the link in your email first.";shake($("#v-verify"))}
+    }catch(err){$("#vm").textContent=errText(err)}
+  });
+});
+$("#other").addEventListener("click",async()=>{await signOut(auth);show("signup")});
+$("#out").addEventListener("click",()=>signOut(auth));
+
+// HOME APP
+let me=null,pay=[],ptype="upi";
+const payKey=()=>"bs_pay_"+me.uid;
+function loadPay(){try{return JSON.parse(localStorage.getItem(payKey())||"[]")}catch(e){return []}}
+function savePay(){try{localStorage.setItem(payKey(),JSON.stringify(pay))}catch(e){}}
+function tab(n){
+  document.querySelectorAll(".pane").forEach(p=>{p.hidden=p.id!=="p-"+n});
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===n));
+  $("#ind").style.transform="translateX("+(["dash","pay","game","me"].indexOf(n)*100)+"%)";
+  if(n==="dash")renderDash();
+  if(n==="game")avStart();else avStop();
+  $("main").scrollTop=0;
+}
+document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
+const fmt=d=>d?new Date(d).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}):"-";
+function setAvatar(){
+  const av=$("#av");av.textContent="";
+  if(me.photoURL){const im=document.createElement("img");im.alt="";im.referrerPolicy="no-referrer";im.src=me.photoURL;av.appendChild(im)}
+  else av.textContent=((me.displayName||me.email||"?")[0]).toUpperCase();
+  $("#pdn").textContent=me.displayName||"Add your name";
+}
+function renderDash(){
+  $("#greet").textContent="Welcome to Black Side";
+  $("#hi").textContent="Hi, "+(me.displayName||me.email||"").split(/[ @]/)[0];
+  const st=[
+    {ok:me.emailVerified,t:"Verify your email"},
+    {ok:!!me.displayName,t:"Add your name",tab:"me"},
+    {ok:pay.length>0,t:"Add a payment method",tab:"pay"}
+  ];
+  const done=st.filter(x=>x.ok).length;
+  $("#pct").textContent=Math.round(done/st.length*100)+"%";
+  $("#hs").textContent=done===st.length?"All set":"Finish setting up";
+  $("#hd").textContent=done+" of "+st.length+" steps done";
+  $("#rf").style.strokeDashoffset=String(113.1*(1-done/st.length));
+  const ul=$("#steps");ul.textContent="";
+  st.forEach(x=>{
+    const li=document.createElement("li");if(x.ok)li.className="done";
+    const d=document.createElement("span");d.className="dot";d.textContent=x.ok?"✓":"";
+    const t=document.createElement("span");t.textContent=x.t;
+    li.append(d,t);
+    if(!x.ok&&x.tab){const b=document.createElement("button");b.type="button";b.textContent="Start";b.addEventListener("click",()=>tab(x.tab));li.appendChild(b)}
+    ul.appendChild(li);
+  });
+  $("#t-since").textContent=fmt(me.metadata.creationTime);
+  $("#t-last").textContent=fmt(me.metadata.lastSignInTime);
+  $("#t-via").textContent=me.providerData.some(p=>p.providerId==="google.com")?"Google":"Email";
+  $("#t-pay").textContent=pay.length;
+  $("#ps-since").textContent=$("#t-since").textContent;$("#ps-via").textContent=$("#t-via").textContent;
+}
+function renderPay(){
+  const l=$("#plist");l.textContent="";$("#pcount").textContent=pay.length+" saved";
+  const mk=(c,t)=>{const e=document.createElement("div");e.className=c;if(t!=null)e.textContent=t;return e};
+  if(!pay.length){const p=mk("empty");const b=document.createElement("b");b.textContent="No payment methods yet";p.append(b,"Add a card or UPI ID to get started.");l.appendChild(p);return}
+  pay.forEach((m,i)=>{
+    const r=mk("pm c"+(i%3)),top=mk("top"),lf=mk("lf"),num=mk("num"),bot=mk("bot");
+    if(m.type!=="upi")lf.appendChild(mk("chip"));
+    const nm=document.createElement("span");nm.textContent=m.type==="upi"?"UPI":m.brand;lf.appendChild(nm);
+    const d=document.createElement("button");d.className="link";d.textContent="Remove";
+    d.addEventListener("click",()=>{pay.splice(i,1);savePay();renderPay();renderDash()});
+    top.append(lf,d);
+    if(m.type==="upi"){num.textContent=m.upi;num.style.letterSpacing="0";bot.append(mk("","Linked UPI ID"))}
+    else{num.textContent="•••• •••• •••• "+m.last4;const a=document.createElement("span");a.textContent=m.name;const b=document.createElement("span");b.textContent="Exp "+m.exp;bot.append(a,b)}
+    r.append(top,num,bot);l.appendChild(r);
+  });
+}
+function enterHome(u){
+  me=u;pay=loadPay();
+  $("#he").textContent=u.email||"";
+  $("#pname").value=u.displayName||"";
+  $("#reset").hidden=!u.providerData.some(p=>p.providerId==="password");
+  setAvatar();renderPay();tab("dash");show("home");
+}
+function setType(t){
+  ptype=t;$("#f-upi").hidden=t!=="upi";$("#f-card").hidden=t!=="card";
+  document.querySelectorAll(".seg button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
+}
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>setType(b.dataset.t)));
+$("#addbtn").addEventListener("click",()=>{const b=$("#addbox");b.hidden=!b.hidden});
+$("#pc").addEventListener("input",e=>{e.target.value=e.target.value.replace(/\D/g,"").slice(0,19).replace(/(.{4})/g,"$1 ").trim()});
+$("#pe").addEventListener("input",e=>{let v=e.target.value.replace(/\D/g,"").slice(0,4);if(v.length>2)v=v.slice(0,2)+"/"+v.slice(2);e.target.value=v});
+const luhn=n=>{let s=0,d=false;for(let i=n.length-1;i>=0;i--){let x=+n[i];if(d){x*=2;if(x>9)x-=9}s+=x;d=!d}return s%10===0};
+const cardBrand=n=>/^4/.test(n)?"Visa":/^(5[1-5]|2[2-7])/.test(n)?"Mastercard":/^3[47]/.test(n)?"Amex":/^(60|65|81|82|508)/.test(n)?"RuPay":"Card";
+$("#addpay").addEventListener("submit",e=>{
+  e.preventDefault();
+  let m;
+  if(ptype==="upi"){
+    const i=$("#pu"),v=i.value.trim();
+    if(!flag(i,/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(v)?"":"Enter a valid UPI ID, like name@bank"))return;
+    m={type:"upi",upi:v};
+  }else{
+    const n=$("#pn"),c=$("#pc"),x=$("#pe"),v=$("#pv"),num=c.value.replace(/\D/g,"");
+    let ok=flag(n,n.value.trim()?"":"Enter the name on the card");
+    ok=flag(c,num.length>=13&&luhn(num)?"":"Enter a valid card number")&&ok;
+    const mm=x.value.match(/^(\d\d)\/(\d\d)$/);
+    const exp=mm?new Date(2000+Number(mm[2]),Number(mm[1]),1):null;
+    ok=flag(x,mm&&Number(mm[1])>=1&&Number(mm[1])<=12&&exp>new Date()?"":"Enter a valid future date (MM/YY)")&&ok;
+    ok=flag(v,/^\d{3,4}$/.test(v.value)?"":"Enter the 3 or 4 digit CVV")&&ok;
+    if(!ok){shake(e.target);return}
+    m={type:"card",name:n.value.trim(),brand:cardBrand(num),last4:num.slice(-4),exp:x.value};
+  }
+  pay.push(m);savePay();renderPay();renderDash();
+  e.target.reset();$("#addbox").hidden=true;
+  toast("Saved. Demo only: nothing is charged.");
+});
+$("#savename").addEventListener("click",async e=>{
+  await run(e.currentTarget,"Saving...",async()=>{
+    try{await updateProfile(auth.currentUser,{displayName:$("#pname").value.trim()});me=auth.currentUser;setAvatar();renderDash();toast("Name updated.")}
+    catch(err){toast(errText(err))}
+  });
+});
+$("#reset").addEventListener("click",async()=>{
+  try{await sendPasswordResetEmail(auth,me.email);toast("Reset link sent to "+me.email)}
+  catch(err){toast(errText(err))}
+});
+
+$("#qplay").addEventListener("click",()=>tab("game"));
+
+// GAME (Aviator, practice coins only)
+const acv=$("#acv"),ax=acv.getContext("2d"),AW=340,AH=240,AK=.12,DPR=Math.min(2,window.devicePixelRatio||1);
+acv.width=AW*DPR;acv.height=AH*DPR;
+let aPhase="wait",aRaf=0,aT0=0,aTend=0,aCrashT=0,aWaitEnd=0,aCrash=2,aMult=1,aBet=0,aBal=1000,aBest=0,aHist=[],aOn=false,aNote="",aBtnTxt="",aFloat=null;
+const aKey=()=>"bs_av_"+(me?me.uid:"x");
+function aLoad(){try{const d=JSON.parse(localStorage.getItem(aKey())||"{}");aBal=Number.isFinite(d.bal)?d.bal:1000;aBest=d.best||0;aHist=Array.isArray(d.hist)?d.hist:[]}catch(e){aBal=1000;aBest=0;aHist=[]}}
+function aSave(){try{localStorage.setItem(aKey(),JSON.stringify({bal:aBal,best:aBest,hist:aHist.slice(0,12)}))}catch(e){}}
+const aPoint=()=>{const r=Math.random();return Math.min(200,Math.max(1,Math.floor(97/(1-r))/100))};
+function aBtn(){
+  const b=$("#abtn");let t,c="go",d=false;
+  if(aPhase==="wait"){t=aBet?"Cancel bet ("+aBet+")":"Place bet";c=aBet?"go ghost":"go"}
+  else if(aPhase==="fly"&&aBet){t="Cash out "+Math.floor(aBet*aMult)+" coins";c="go cash"}
+  else{t=aPhase==="fly"?"Round in progress":"Next round soon";c="go ghost";d=true}
+  if(t+c!==aBtnTxt){b.textContent=t;b.className=c;aBtnTxt=t+c}
+  if(b.disabled!==d)b.disabled=d;
+}
+function aUI(){
+  $("#abal").textContent=aBal;
+  $("#abest").textContent=aBest.toFixed(2)+"x";
+  $("#abet").disabled=!!aBet;
+  $("#adot").className=aPhase;$("#astat").textContent=aPhase==="wait"?"Place your bets":aPhase==="fly"?"In flight":"Flew away";
+  const h=$("#ahist");h.textContent="";
+  aHist.slice(0,10).forEach(v=>{const e=document.createElement("span");e.textContent=Number(v).toFixed(2)+"x";if(v>=2)e.className="hi";h.appendChild(e)});
+  aBtn();
+}
+function aNewRound(){aPhase="wait";aWaitEnd=performance.now()+5000;aMult=1;aCrash=aPoint();aUI()}
+function aCash(auto){
+  if(aPhase!=="fly"||!aBet)return;
+  const win=Math.floor(aBet*aMult);aBal+=win;aBest=Math.max(aBest,aMult);
+  aNote="Cashed out at "+aMult.toFixed(2)+"x";aFloat={t:performance.now(),txt:"+"+(win-aBet)+" coins"};
+  if(!auto)toast("Cashed out at "+aMult.toFixed(2)+"x. You won "+(win-aBet)+" coins.");
+  aBet=0;aSave();aUI();
+}
+function aBoom(now){
+  aPhase="crash";aCrashT=now;aWaitEnd=now+2800;aTend=Math.log(aCrash)/AK;
+  if(aBet){toast("Flew away at "+aCrash.toFixed(2)+"x. You lost "+aBet+" coins.");aBet=0;aNote=""}
+  aHist.unshift(aCrash);aSave();aUI();
+}
+function aLoop(now){
+  if(!aOn)return;
+  if(aPhase==="wait"){if(now>=aWaitEnd){aPhase="fly";aT0=now;aNote="";aUI()}}
+  else if(aPhase==="fly"){
+    aMult=Math.exp(AK*(now-aT0)/1000);
+    if(aMult>=aCrash){aMult=aCrash;aBoom(now)}else aBtn();
+  }else if(now>=aWaitEnd)aNewRound();
+  aDraw(now);
+  aRaf=requestAnimationFrame(aLoop);
+}
+function aXY(t){
+  const L=AK*t;
+  return [28+(AW-90)*(t/(t+7)),AH-30-(AH-90)*(L/(L+1.2))];
+}
+function aPlane(x,y,a,c,al){
+  ax.save();ax.globalAlpha=al;ax.translate(x,y);ax.rotate(a);ax.shadowColor=c;ax.shadowBlur=12;ax.fillStyle=c;
+  ax.beginPath();[[20,0],[4,-4],[-6,-15],[-10,-15],[-5,-3],[-14,-3],[-17,-8],[-20,-8],[-17,0],[-20,8],[-17,8],[-14,3],[-5,3],[-10,15],[-6,15],[4,4]].forEach((q,i)=>i?ax.lineTo(q[0],q[1]):ax.moveTo(q[0],q[1]));
+  ax.closePath();ax.fill();ax.restore();
+}
+function aDraw(now){
+  ax.setTransform(DPR,0,0,DPR,0,0);ax.clearRect(0,0,AW,AH);
+  const crashed=aPhase==="crash",fly=aPhase==="fly";
+  const hue=crashed?"#ff7a7a":aMult>=2?"#9be8b5":"#eeeef4";
+  const bg=ax.createRadialGradient(AW*.25,AH,10,AW*.25,AH,AW);
+  bg.addColorStop(0,crashed?"rgba(255,122,122,.2)":"rgba(238,238,244,.18)");bg.addColorStop(1,"rgba(0,0,0,0)");
+  ax.fillStyle=bg;ax.fillRect(0,0,AW,AH);
+  const off=fly?((now-aT0)/40)%28:0;ax.fillStyle="#2a2a35";
+  for(let i=-14-off;i<AW;i+=28)for(let j=14;j<AH;j+=28){ax.beginPath();ax.arc(i,j,1.2,0,7);ax.fill()}
+  const t=fly?(now-aT0)/1000:crashed?aTend:0,n=40,pts=[];
+  for(let i=0;i<=n;i++)pts.push(aXY(t*i/n));
+  if(aPhase!=="wait"){
+    ax.beginPath();ax.moveTo(pts[0][0],AH);pts.forEach(q=>ax.lineTo(q[0],q[1]));ax.lineTo(pts[n][0],AH);ax.closePath();
+    const g=ax.createLinearGradient(0,0,0,AH);g.addColorStop(0,crashed?"rgba(255,122,122,.25)":"rgba(238,238,244,.28)");g.addColorStop(1,"rgba(0,0,0,0)");
+    ax.fillStyle=g;ax.fill();
+    ax.beginPath();pts.forEach((q,i)=>i?ax.lineTo(q[0],q[1]):ax.moveTo(q[0],q[1]));
+    ax.lineWidth=3.5;ax.lineJoin="round";ax.lineCap="round";ax.strokeStyle=hue;ax.shadowColor=hue;ax.shadowBlur=14;ax.stroke();ax.shadowBlur=0;
+  }
+  const e=pts[n],q=pts[Math.max(0,n-3)];
+  let a=Math.atan2(e[1]-q[1],e[0]-q[0]);if(e[0]===q[0]&&e[1]===q[1])a=-.3;
+  if(crashed){const k=Math.min(1,(now-aCrashT)/700);aPlane(e[0]+k*100,e[1]-k*50,a,hue,1-k);
+    if(now-aCrashT<400){ax.fillStyle="rgba(255,122,122,"+(.22*(1-(now-aCrashT)/400))+")";ax.fillRect(0,0,AW,AH)}}
+  else aPlane(e[0],e[1],a,"#f3f1ec",1);
+  ax.textAlign="center";ax.shadowColor=hue;
+  if(aPhase==="wait"){
+    const s=Math.max(1,Math.ceil((aWaitEnd-now)/1000));
+    ax.shadowBlur=0;ax.fillStyle="#f3f1ec";ax.font="italic 800 26px Exo 2, Arial Black, sans-serif";ax.fillText("Takeoff in "+s+"s",AW/2,AH/2);
+    ax.fillStyle="#9b9ba6";ax.font="14px Manrope, sans-serif";ax.fillText(aBet?"Bet placed: "+aBet+" coins":"Place your bet below",AW/2,AH/2+28);
+  }else{
+    ax.shadowBlur=crashed?0:18;ax.fillStyle=crashed?"#ff7a7a":"#f3f1ec";ax.font="italic 800 56px Exo 2, Arial Black, sans-serif";ax.fillText(aMult.toFixed(2)+"x",AW/2,AH/2+8);
+    ax.shadowBlur=0;ax.font="600 14px Manrope, sans-serif";
+    if(crashed){ax.fillStyle="#ff7a7a";ax.fillText("Flew away",AW/2,AH/2+36)}
+    else if(aNote){ax.fillStyle="#9be8b5";ax.fillText(aNote,AW/2,AH/2+36)}
+  }
+  if(aFloat){const k=(now-aFloat.t)/1400;if(k>=1)aFloat=null;else{ax.globalAlpha=1-k;ax.fillStyle="#9be8b5";ax.font="italic 800 22px Exo 2, Arial Black, sans-serif";ax.fillText(aFloat.txt,AW/2,AH/2-52-k*30);ax.globalAlpha=1}}
+  ax.shadowBlur=0;
+}
+function avStart(){if(aOn)return;aOn=true;aLoad();aBet=0;aNote="";aNewRound();aRaf=requestAnimationFrame(aLoop)}
+function avStop(){
+  if(!aOn)return;
+  if(aPhase==="fly"&&aBet)aCash(true);
+  else if(aBet){aBal+=aBet;aBet=0;aSave()}
+  aOn=false;cancelAnimationFrame(aRaf);
+}
+$("#abtn").addEventListener("click",()=>{
+  if(aPhase==="wait"){
+    if(aBet){aBal+=aBet;aBet=0}
+    else{
+      const i=$("#abet"),v=Math.floor(Number(i.value));
+      if(!flag(i,v>aBal?"Not enough coins":v>=10?"":"Minimum bet is 10 coins"))return;
+      aBal-=v;aBet=v;
+    }
+    aSave();aUI();
+  }else if(aPhase==="fly"&&aBet)aCash();
+});
+document.querySelectorAll("#achips button").forEach(b=>b.addEventListener("click",()=>{const i=$("#abet");if(i.disabled)return;const v=Math.floor(Number(i.value))||10,a=b.dataset.a;i.value=a==="min"?10:a==="half"?Math.max(10,Math.floor(v/2)):a==="dbl"?Math.max(10,Math.min(aBal,v*2)):Math.max(10,aBal);flag(i,"")}));
+document.querySelectorAll(".sb").forEach(b=>b.addEventListener("click",()=>{const i=$("#abet");if(i.disabled)return;const v=Math.floor(Number(i.value))||10;i.value=Math.max(10,Math.min(Math.max(10,aBal),v+Number(b.dataset.s)*10));flag(i,"")}));
+$("#areset").addEventListener("click",()=>{if(aBet){toast("Finish or cancel your bet first.");return}aBal=1000;aSave();aUI();toast("Coins reset to 1000.")});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)avStop();else if(view==="home"&&!$("#p-game").hidden)avStart()});
+
+// REWARDED AD (Monetag): paste Monetag's own script tag in <head>, then put your zone ID here
+const AD_ZONE="YOUR_ZONE_ID",AD_REWARD=100,AD_COOLDOWN=30;
+let adBusy=false,adNext=0;
+$("#adbtn").addEventListener("click",async()=>{
+  if(adBusy)return;
+  const fn=window["show_"+AD_ZONE];
+  if(typeof fn!=="function"){toast("Ads are not set up yet.");return}
+  const w=Math.ceil((adNext-Date.now())/1000);
+  if(w>0){toast("Next ad available in "+w+"s.");return}
+  adBusy=true;const b=$("#adbtn");b.disabled=true;
+  try{await fn();aBal+=AD_REWARD;aSave();aUI();adNext=Date.now()+AD_COOLDOWN*1000;toast("+"+AD_REWARD+" coins added!")}
+  catch(e){toast("Ad not completed. No coins added.")}
+  adBusy=false;b.disabled=false;
+});
+
+// ROUTING
+function route(u){
+  if(!u){avStop();if(view==="home"||view==="verify")show("login");return}
+  ["#le","#lp","#se","#sp"].forEach(s=>{const i=$(s);i.value="";flag(i,"")});
+  $("#vm").textContent="";
+  if(!u.emailVerified){$("#ve").textContent=u.email;show("verify");return}
+  enterHome(u);
+}
+onAuthStateChanged(auth,route);
+</script>
+</body>
+</html>
