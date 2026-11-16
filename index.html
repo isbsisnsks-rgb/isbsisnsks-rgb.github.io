@@ -75,6 +75,10 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 .seg button{flex:1;padding:10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--dim);font:600 .85rem var(--body);cursor:pointer}
 .seg button.on{color:var(--ink);border-color:var(--glow)}
 .note{color:var(--dim);font-size:.78rem;line-height:1.5;margin:14px 0 0}
+.gmenu{display:grid;gap:12px;margin-top:14px}.gm{display:flex;flex-direction:column;gap:4px;text-align:left;padding:16px;border:1px solid var(--line);border-radius:18px;background:none;color:var(--ink);font:600 1rem var(--body);cursor:pointer}.gm small{color:var(--dim);font-weight:400;font-size:.8rem}
+.gtitle{margin:12px 0 4px;font-size:1.2rem}.gstat{color:var(--dim);font-size:.9rem;margin:0 0 14px;min-height:1.3em}
+.mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.mc,.tc{aspect-ratio:1;border:1px solid var(--line);border-radius:14px;background:#0d0d10;color:var(--ink);font-size:1.6rem;cursor:pointer}.mc.up{background:#1a1a20}.mc.ok{border-color:var(--ok)}
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.tc{font:700 2rem var(--body)}.tapbtn{height:160px;font-size:1.4rem}
 .goal{margin:16px 0 0}.goal .gt{display:flex;justify-content:space-between;font-size:.78rem;color:var(--dim);margin-bottom:6px}.goal .gb{height:6px;border-radius:999px;background:var(--line);overflow:hidden}.goal .gb i{display:block;height:100%;width:0;background:var(--ink);border-radius:999px;transition:width .4s}.goal.done .gt{color:var(--ok)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .gap{margin-top:10px}
@@ -98,8 +102,8 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 .tile{border:1px solid var(--line);border-radius:16px;padding:14px;min-width:0}
 .tile small{display:block;color:var(--dim);font-size:.72rem;margin-bottom:6px}
 .tile b{display:block;font:800 .95rem var(--display);letter-spacing:.01em;overflow-wrap:anywhere}
-.nav{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:0;right:0;width:min(360px,calc(100% - 32px));margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;border:1px solid #2f2f2f;border-radius:26px;background:rgba(14,14,16,.78);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 12px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06)}
-.ind{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/4);border-radius:20px;background:linear-gradient(160deg,#fff,#e4e4ea);box-shadow:0 6px 20px rgba(238,238,244,.25);transition:transform .38s cubic-bezier(.3,1.3,.5,1)}
+.nav{position:fixed;z-index:3;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:0;right:0;width:min(360px,calc(100% - 32px));margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);padding:6px;border:1px solid #2f2f2f;border-radius:26px;background:rgba(14,14,16,.78);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 12px 40px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06)}
+.ind{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/5);border-radius:20px;background:linear-gradient(160deg,#fff,#e4e4ea);box-shadow:0 6px 20px rgba(238,238,244,.25);transition:transform .38s cubic-bezier(.3,1.3,.5,1)}
 .nav button{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;color:var(--dim);font:600 .68rem var(--body);padding:9px 0 8px;cursor:pointer;transition:color .25s}
 .nav button.on{color:#000}
 .nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -341,11 +345,25 @@ main{padding-top:86px}
       </div>
     </div>
 
+    <div class="pane" id="p-games" hidden>
+      <h1>Arcade</h1>
+      <p class="note">Free games to play. No real money is used.</p>
+      <div class="gmenu" id="gmenu"></div>
+      <div id="gplay" hidden>
+        <button class="link" id="gback" type="button">All games</button>
+        <h2 class="gtitle" id="gtitle"></h2>
+        <p class="gstat" id="gstat"></p>
+        <div id="gboard"></div>
+        <button class="go ghost gap" id="gagain" type="button">Play again</button>
+      </div>
+    </div>
+
     <nav class="nav" aria-label="Sections">
       <span class="ind" id="ind"></span>
       <button type="button" data-tab="dash" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V19a1 1 0 0 1-1 1h-4v-5H9v5H5a1 1 0 0 1-1-1z"/></svg><span>Dashboard</span></button>
       <button type="button" data-tab="pay"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M3 10.5h18"/></svg><span>Payments</span></button>
       <button type="button" data-tab="game"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 20.5 4l-7 16.5-2.5-6.5z"/><path d="m11 14 9.5-10"/></svg><span>Game</span></button>
+      <button type="button" data-tab="games"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="7" width="18" height="11" rx="4"/><path d="M8 10v5M5.5 12.5h5M15.5 11.5h.01M17.5 13.5h.01"/></svg><span>Arcade</span></button>
       <button type="button" data-tab="me"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="3.5"/><path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"/></svg><span>Profile</span></button>
     </nav>
   </section>
@@ -473,7 +491,7 @@ function savePay(){try{localStorage.setItem(payKey(),JSON.stringify(pay))}catch(
 function tab(n){
   document.querySelectorAll(".pane").forEach(p=>{p.hidden=p.id!=="p-"+n});
   document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===n));
-  $("#ind").style.transform="translateX("+(["dash","pay","game","me"].indexOf(n)*100)+"%)";
+  $("#ind").style.transform="translateX("+(["dash","pay","game","games","me"].indexOf(n)*100)+"%)";
   if(n==="dash")renderDash();
   if(n==="game")avStart();else avStop();
   $("main").scrollTop=0;
@@ -720,6 +738,55 @@ function goalUI(){
   $("#goalTxt").textContent=done?"Black Side Legend unlocked":"Goal: "+GOAL_COINS.toLocaleString("en-US")+" coins";
   $("#goal").classList.toggle("done",done);
 }
+// ARCADE (free games, no cash value)
+let gTimer=0,gCur="";
+const GAMES=[{id:"memory",name:"Memory Match",desc:"Find all the pairs in the fewest moves"},{id:"tap",name:"Tap Rush",desc:"Tap as many times as you can in 10 seconds"},{id:"ttt",name:"Tic-Tac-Toe",desc:"Beat the computer"}];
+const gStat=t=>{$("#gstat").textContent=t};
+function gSave(id,v,low){let b=null;try{const o=localStorage.getItem("bs_g_"+id);b=o===null?null:Number(o)}catch(e){}
+  if(b===null||(low?v<b:v>b)){b=v;try{localStorage.setItem("bs_g_"+id,String(v))}catch(e){}}return b}
+function gMenu(){clearInterval(gTimer);$("#gplay").hidden=true;const m=$("#gmenu");m.hidden=false;m.textContent="";
+  GAMES.forEach(g=>{const b=document.createElement("button");b.type="button";b.className="gm";b.textContent=g.name;
+    const d=document.createElement("small");d.textContent=g.desc;b.appendChild(d);b.addEventListener("click",()=>gOpen(g.id));m.appendChild(b)})}
+function gOpen(id){clearInterval(gTimer);gCur=id;$("#gmenu").hidden=true;$("#gplay").hidden=false;
+  $("#gtitle").textContent=GAMES.find(g=>g.id===id).name;({memory:gMemory,tap:gTap,ttt:gTtt})[id]()}
+function gMemory(){
+  const em=["🚀","🌙","⭐","🔥","💎","🎯","⚡","🍀"],deck=em.concat(em).sort(()=>Math.random()-.5);
+  let open=[],lock=false,moves=0,found=0;const b=$("#gboard");b.className="mgrid";b.textContent="";gStat("Moves: 0");
+  deck.forEach(sym=>{const c=document.createElement("button");c.type="button";c.className="mc";
+    c.addEventListener("click",()=>{if(lock||c.classList.contains("up"))return;
+      c.classList.add("up");c.textContent=sym;open.push(c);
+      if(open.length===2){moves++;gStat("Moves: "+moves);const a=open[0],d=open[1];
+        if(a.textContent===d.textContent){found++;open=[];a.classList.add("ok");d.classList.add("ok");
+          if(found===8)gStat("Done in "+moves+" moves. Best: "+gSave("memory",moves,true))}
+        else{lock=true;setTimeout(()=>{a.classList.remove("up");d.classList.remove("up");a.textContent="";d.textContent="";open=[];lock=false},700)}}});
+    b.appendChild(c)})}
+function gTap(){
+  const b=$("#gboard");b.className="";b.textContent="";let n=0,left=10,run=false;
+  const btn=document.createElement("button");btn.type="button";btn.className="go tapbtn";btn.textContent="Tap to start";b.appendChild(btn);gStat("Time: 10s | Taps: 0");
+  btn.addEventListener("click",()=>{if(left<=0)return;
+    if(!run){run=true;gTimer=setInterval(()=>{left--;gStat("Time: "+left+"s | Taps: "+n);
+      if(left<=0){clearInterval(gTimer);btn.disabled=true;btn.textContent="Done";gStat("Time up! Taps: "+n+". Best: "+gSave("tap",n,false))}},1000)}
+    n++;btn.textContent="Tap! "+n;gStat("Time: "+left+"s | Taps: "+n)})}
+function gTtt(){
+  const b=$("#gboard");b.className="tgrid";b.textContent="";const s=Array(9).fill(""),cells=[];let over=false;
+  const L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  const win=p=>L.some(l=>l.every(i=>s[i]===p)),full=()=>s.every(x=>x);
+  const mark=(i,p)=>{s[i]=p;cells[i].textContent=p;cells[i].disabled=true};
+  const find=p=>{for(const l of L){const e=l.filter(i=>s[i]==="");if(e.length===1&&l.filter(i=>s[i]===p).length===2)return e[0]}return -1};
+  gStat("Your turn (X)");
+  for(let i=0;i<9;i++){const c=document.createElement("button");c.type="button";c.className="tc";cells.push(c);
+    c.addEventListener("click",()=>{if(over||s[i])return;mark(i,"X");
+      if(win("X")){over=true;gStat("You win!");return}
+      if(full()){over=true;gStat("Draw");return}
+      let m=find("O");if(m<0)m=find("X");if(m<0&&!s[4])m=4;
+      if(m<0){const e=s.map((x,j)=>x?-1:j).filter(j=>j>=0);m=e[Math.floor(Math.random()*e.length)]}
+      mark(m,"O");
+      if(win("O")){over=true;gStat("Computer wins")}else if(full()){over=true;gStat("Draw")}else gStat("Your turn (X)")});
+    b.appendChild(c)}}
+$("#gback").addEventListener("click",gMenu);
+$("#gagain").addEventListener("click",()=>gOpen(gCur));
+gMenu();
+
 // ROUTING
 function route(u){
   if(!u){avStop();if(view==="home"||view==="verify")show("login");return}
