@@ -244,13 +244,14 @@ main{padding-top:86px}
 .bgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
 .bc{aspect-ratio:1;border-radius:14px;border:1px solid rgba(255,255,255,.3);background:linear-gradient(135deg,#14141a,#000);font-size:1.4rem;cursor:pointer;color:#fff}
 .bc.ok{background:#0f2a1c;border-color:#35d07f}.bc.bad{background:#2a1015;border-color:#ff5d6c}
+.crow4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.b3{grid-template-columns:repeat(3,1fr)}
 </style>
 </head>
 <body>
 <div class="grid"></div><div class="halo"></div>
 <div class="topfade"></div>
 <div class="brand">Black Side</div>
-<div class="ver">v15</div>
+<div class="ver">v17</div>
 <div class="toast" id="toast" role="status"></div>
 <main>
   <section class="view on" id="v-login">
@@ -365,7 +366,7 @@ main{padding-top:86px}
 
     <div class="pane" id="p-games" hidden>
       <h1>Arcade</h1>
-      <p class="note">Free games to play. No real money is used. Colour Trading, Number Pick and Boom Blast use your free practice coins.</p>
+      <p class="note">Free games to play. No real money is used. Every game here uses your free practice coins.</p>
       <div class="gmenu" id="gmenu"></div>
       <div id="gplay" hidden>
         <button class="link" id="gback" type="button">All games</button>
@@ -759,7 +760,7 @@ function goalUI(){
 }
 // ARCADE (free games, no cash value)
 let gTimer=0,gCur="";
-const GAMES=[{id:"memory",name:"Memory Match",desc:"Find all the pairs in the fewest moves"},{id:"tap",name:"Tap Rush",desc:"Tap as many times as you can in 10 seconds"},{id:"ttt",name:"Tic-Tac-Toe",desc:"Beat the computer"},{id:"colour",name:"Colour Trading",desc:"Pick a colour every round (practice coins)"},{id:"number",name:"Number Pick",desc:"Guess a number from 0 to 9 (practice coins)"},{id:"boom",name:"Boom Blast",desc:"Find gems, avoid bombs, cash out in time (practice coins)"}];
+const GAMES=[{id:"memory",name:"Memory Match",desc:"Find all pairs in few moves (bet coins)"},{id:"tap",name:"Tap Rush",desc:"Tap fast for 10 seconds (bet coins)"},{id:"ttt",name:"Tic-Tac-Toe",desc:"Beat the computer (bet coins)"},{id:"colour",name:"Colour Match",desc:"Tap the ink colour, not the word (bet coins)"},{id:"math",name:"Math Rush",desc:"Solve quick sums for 30 seconds (bet coins)"},{id:"boom",name:"Boom Blast",desc:"Tap gems, dodge bombs for 20 seconds (bet coins)"}];
 const gStat=t=>{$("#gstat").textContent=t};
 function gSave(id,v,low){let b=null;try{const o=localStorage.getItem("bs_g_"+id);b=o===null?null:Number(o)}catch(e){}
   if(b===null||(low?v<b:v>b)){b=v;try{localStorage.setItem("bs_g_"+id,String(v))}catch(e){}}return b}
@@ -767,8 +768,8 @@ function gMenu(){gStopAll();$("#gplay").hidden=true;const m=$("#gmenu");m.hidden
   GAMES.forEach(g=>{const b=document.createElement("button");b.type="button";b.className="gm";b.textContent=g.name;
     const d=document.createElement("small");d.textContent=g.desc;b.appendChild(d);b.addEventListener("click",()=>gOpen(g.id));m.appendChild(b)})}
 function gOpen(id){gStopAll();gCur=id;$("#gmenu").hidden=true;$("#gplay").hidden=false;
-  $("#gtitle").textContent=GAMES.find(g=>g.id===id).name;({memory:gMemory,tap:gTap,ttt:gTtt,colour:gColour,number:gNumber,boom:gBoom})[id]()}
-function gMemory(){
+  $("#gtitle").textContent=GAMES.find(g=>g.id===id).name;({memory:gMemory,tap:gTap,ttt:gTtt,colour:gColour,math:gMath,boom:gBoom})[id]()}
+function gMemoryRun(bet){
   const em=["🚀","🌙","⭐","🔥","💎","🎯","⚡","🍀"],deck=em.concat(em).sort(()=>Math.random()-.5);
   let open=[],lock=false,moves=0,found=0;const b=$("#gboard");b.className="mgrid";b.textContent="";gStat("Moves: 0");
   deck.forEach(sym=>{const c=document.createElement("button");c.type="button";c.className="mc";
@@ -776,17 +777,17 @@ function gMemory(){
       c.classList.add("up");c.textContent=sym;open.push(c);
       if(open.length===2){moves++;gStat("Moves: "+moves);const a=open[0],d=open[1];
         if(a.textContent===d.textContent){found++;open=[];a.classList.add("ok");d.classList.add("ok");
-          if(found===8)gStat("Done in "+moves+" moves. Best: "+gSave("memory",moves,true))}
+          if(found===8){const m=moves<=14?3:moves<=18?2:moves<=24?1:0,w=Math.floor(bet*m);aBal+=w;aSave();gInfo("Done in "+moves+" moves. "+(w>bet?"Won +"+(w-bet):w===bet?"Bet returned":"Lost "+bet)+" | Best: "+gSave("memory",moves,true))}}
         else{lock=true;setTimeout(()=>{a.classList.remove("up");d.classList.remove("up");a.textContent="";d.textContent="";open=[];lock=false},700)}}});
     b.appendChild(c)})}
-function gTap(){
+function gTapRun(bet){
   const b=$("#gboard");b.className="";b.textContent="";let n=0,left=10,run=false;
   const btn=document.createElement("button");btn.type="button";btn.className="go tapbtn";btn.textContent="Tap to start";b.appendChild(btn);gStat("Time: 10s | Taps: 0");
   btn.addEventListener("click",()=>{if(left<=0)return;
     if(!run){run=true;gTimer=setInterval(()=>{left--;gStat("Time: "+left+"s | Taps: "+n);
-      if(left<=0){clearInterval(gTimer);btn.disabled=true;btn.textContent="Done";gStat("Time up! Taps: "+n+". Best: "+gSave("tap",n,false))}},1000)}
+      if(left<=0){clearInterval(gTimer);btn.disabled=true;btn.textContent="Done";{const m=n>=70?3:n>=55?2:n>=40?1:0,w=Math.floor(bet*m);aBal+=w;aSave();gInfo("Taps: "+n+". "+(w>bet?"Won +"+(w-bet):w===bet?"Bet returned":"Lost "+bet)+" | Best: "+gSave("tap",n,false))}}},1000)}
     n++;btn.textContent="Tap! "+n;gStat("Time: "+left+"s | Taps: "+n)})}
-function gTtt(){
+function gTttRun(bet){
   const b=$("#gboard");b.className="tgrid";b.textContent="";const s=Array(9).fill(""),cells=[];let over=false;
   const L=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
   const win=p=>L.some(l=>l.every(i=>s[i]===p)),full=()=>s.every(x=>x);
@@ -795,12 +796,12 @@ function gTtt(){
   gStat("Your turn (X)");
   for(let i=0;i<9;i++){const c=document.createElement("button");c.type="button";c.className="tc";cells.push(c);
     c.addEventListener("click",()=>{if(over||s[i])return;mark(i,"X");
-      if(win("X")){over=true;gStat("You win!");return}
-      if(full()){over=true;gStat("Draw");return}
+      if(win("X")){over=true;aBal+=Math.floor(bet*1.8);aSave();gInfo("You win! +"+Math.floor(bet*.8));return}
+      if(full()){over=true;aBal+=bet;aSave();gInfo("Draw, bet returned");return}
       let m=find("O");if(m<0)m=find("X");if(m<0&&!s[4])m=4;
       if(m<0){const e=s.map((x,j)=>x?-1:j).filter(j=>j>=0);m=e[Math.floor(Math.random()*e.length)]}
       mark(m,"O");
-      if(win("O")){over=true;gStat("Computer wins")}else if(full()){over=true;gStat("Draw")}else gStat("Your turn (X)")});
+      if(win("O")){over=true;gInfo("Computer wins. You lost "+bet)}else if(full()){over=true;aBal+=bet;aSave();gInfo("Draw, bet returned")}else gStat("Your turn (X)")});
     b.appendChild(c)}}
 // ARCADE COIN GAMES (free practice coins only, no cash value)
 let gLeave=null,gBet=50;
@@ -809,66 +810,55 @@ const gInfo=x=>gStat("Coins: "+aBal+" | Bet: "+gBet+(x?" | "+x:""));
 const gRnd=n=>Math.floor(Math.random()*n);
 function gChips(){const w=document.createElement("div");w.className="chips";
   [10,50,100,500].forEach(v=>{const c=document.createElement("button");c.type="button";c.textContent=v;c.addEventListener("click",()=>{gBet=v;gInfo()});w.appendChild(c)});return w}
-function gColour(){
-  aLoad();const b=$("#gboard");b.className="";
-  b.innerHTML='<div class="ctimer"><span id="ct">10</span><small>seconds left to bet</small></div><div class="chist" id="ch"></div><div class="crow"><button type="button" class="cb g" data-c="g">Green<small>1.9x</small></button><button type="button" class="cb v" data-c="v">Violet<small>4.5x</small></button><button type="button" class="cb r" data-c="r">Red<small>1.9x</small></button></div><div class="cres" id="cr">Tap a colour to bet</div>';
-  b.appendChild(gChips());
-  let left=10,pick="",bet=0;const hist=[];
-  const PAY={g:1.9,r:1.9,v:4.5},HEX={g:"#35d07f",r:"#ff5d6c",v:"#a77bff"},btns=[...b.querySelectorAll(".cb")];
-  btns.forEach(x=>x.addEventListener("click",()=>{
-    if(pick){$("#cr").textContent="Bet already placed this round";return}
-    if(aBal<gBet){$("#cr").textContent="Not enough coins";return}
-    pick=x.dataset.c;bet=gBet;aBal-=bet;aSave();x.classList.add("on");$("#cr").textContent="Bet "+bet+" on "+x.firstChild.textContent;gInfo()}));
-  gLeave=()=>{if(pick){aBal+=bet;aSave()}};
-  gInfo();
-  gTimer=setInterval(()=>{
-    left--;$("#ct").textContent=Math.max(left,0);if(left>0)return;
-    const n=gRnd(10),main=n%2?"g":"r",vio=n===0||n===5,win=pick&&(pick===main||(pick==="v"&&vio));
-    let msg="Result: "+n;
-    if(pick){if(win){const w=Math.floor(bet*PAY[pick]);aBal+=w;aSave();msg+=". You won +"+(w-bet)}else msg+=". You lost "+bet}
-    $("#cr").textContent=msg;
-    hist.unshift(n);const h=$("#ch");h.textContent="";
-    hist.slice(0,10).forEach(v=>{const d=document.createElement("i");d.textContent=v;d.style.background=HEX[v%2?"g":"r"];if(v===0||v===5)d.style.boxShadow="0 0 0 2px "+HEX.v;h.appendChild(d)});
-    pick="";bet=0;left=10;btns.forEach(x=>x.classList.remove("on"));$("#ct").textContent=10;gInfo();
-  },1000);
+function gStake(rules,run){
+  aLoad();const b=$("#gboard");b.className="";b.textContent="";
+  const r=document.createElement("p");r.className="note";r.textContent=rules;
+  const s=document.createElement("button");s.type="button";s.className="go";s.textContent="Start game";
+  s.addEventListener("click",()=>{if(aBal<gBet){gInfo("Not enough coins");return}const bet=gBet;aBal-=bet;aSave();run(bet)});
+  b.append(r,gChips(),s);gInfo();
 }
-function gNumber(){
-  aLoad();const b=$("#gboard");b.className="";let pick=-1,busy=false;
-  b.innerHTML='<div class="nbig" id="nb">?</div><div class="ngrid" id="ng"></div><button class="go" id="nplay" type="button">Draw (pays 9x)</button>';
-  const nb=$("#nb"),ng=$("#ng");
-  for(let i=0;i<10;i++){const c=document.createElement("button");c.type="button";c.className="nc";c.textContent=i;
-    c.addEventListener("click",()=>{if(busy)return;pick=i;[...ng.children].forEach(x=>x.classList.toggle("on",x===c))});ng.appendChild(c)}
-  b.insertBefore(gChips(),$("#nplay"));gInfo("Pick a number");
-  $("#nplay").addEventListener("click",()=>{
-    if(busy)return;if(pick<0){gInfo("Pick a number first");return}
-    if(aBal<gBet){gInfo("Not enough coins");return}
-    const bet=gBet;aBal-=bet;aSave();busy=true;let k=0;
-    const t=setInterval(()=>{nb.textContent=gRnd(10);if(++k<14)return;
-      clearInterval(t);const n=gRnd(10);nb.textContent=n;busy=false;
-      if(n===pick){aBal+=bet*9;aSave();gInfo("You won +"+bet*8)}else gInfo("Number "+n+". You lost "+bet)},70)});
+const gMemory=()=>gStake("Pick your bet, then finish in few moves. 14 or fewer moves pays 3x, 18 or fewer pays 2x, 24 or fewer returns your bet. Leaving the game loses the bet.",gMemoryRun);
+const gTap=()=>gStake("Pick your bet, then tap for 10 seconds. 70 taps pays 3x, 55 pays 2x, 40 returns your bet. Leaving the game loses the bet.",gTapRun);
+const gTtt=()=>gStake("Pick your bet and beat the computer. A win pays 1.8x, a draw returns your bet. Leaving the game loses the bet.",gTttRun);
+const gPay=(bet,m)=>{const w=Math.floor(bet*m);aBal+=w;aSave();return w>bet?"Won +"+(w-bet):w===bet?"Bet returned":"Lost "+bet};
+function gQuiz(bet,key,secs,T,make){
+  const b=$("#gboard");b.className="";b.innerHTML='<div class="nbig" id="qq"></div><div class="crow4" id="qo"></div>';
+  const qq=$("#qq"),qo=$("#qo");let score=0,left=secs,q,over=false;
+  const show=()=>{q=make();qq.textContent=q.text;qq.style.color=q.color||"";qo.textContent="";
+    q.opts.forEach((o,i)=>{const c=document.createElement("button");c.type="button";c.className="cb";c.textContent=o;
+      c.addEventListener("click",()=>{if(over)return;score=i===q.ok?score+1:Math.max(0,score-1);gStat("Time: "+left+"s | Score: "+score);show()});qo.appendChild(c)})};
+  show();gStat("Time: "+left+"s | Score: 0");
+  gTimer=setInterval(()=>{left--;gStat("Time: "+left+"s | Score: "+score);if(left>0)return;
+    clearInterval(gTimer);over=true;qo.textContent="";qq.style.color="";qq.textContent=score;
+    const m=score>=T[0]?3:score>=T[1]?2:score>=T[2]?1:0;
+    gInfo("Score "+score+". "+gPay(bet,m)+" | Best: "+gSave(key,score,false))},1000);
 }
-function gBoom(){
-  aLoad();const b=$("#gboard");b.className="";
-  const N=16,B=3;let bombs=[],on=false,safe=0,bet=0;
-  b.innerHTML='<div class="bmul" id="bm">1.00x</div><div class="bgrid" id="bg"></div><button class="go" id="bgo" type="button">Start</button>';
-  const bm=$("#bm"),bg=$("#bg"),bgo=$("#bgo"),cells=[];
-  const mult=k=>{let m=.95;for(let i=0;i<k;i++)m*=(N-i)/(N-B-i);return k?m:1};
-  const reveal=()=>{cells.forEach((c,i)=>{if(bombs.includes(i)){c.textContent="💥";c.classList.add("bad")}c.disabled=true});bgo.disabled=false;bgo.textContent="Play again"};
-  const cash=()=>{const w=Math.floor(bet*mult(safe));aBal+=w;aSave();on=false;reveal();gInfo("Cashed out +"+(w-bet))};
-  for(let i=0;i<N;i++){const c=document.createElement("button");c.type="button";c.className="bc";c.disabled=true;cells.push(c);
-    c.addEventListener("click",()=>{if(!on||c.textContent)return;
-      if(bombs.includes(i)){on=false;reveal();gInfo("Boom! You lost "+bet);return}
-      safe++;c.textContent="💎";c.classList.add("ok");bm.textContent=mult(safe).toFixed(2)+"x";bgo.disabled=false;bgo.textContent="Cash out "+Math.floor(bet*mult(safe));
-      if(safe===N-B)cash()});bg.appendChild(c)}
-  b.insertBefore(gChips(),bgo);gInfo();
-  bgo.addEventListener("click",()=>{
-    if(on){if(safe>0)cash();return}
-    if(aBal<gBet){gInfo("Not enough coins");return}
-    bet=gBet;aBal-=bet;aSave();on=true;safe=0;bombs=[];
-    while(bombs.length<B){const x=gRnd(N);if(!bombs.includes(x))bombs.push(x)}
-    cells.forEach(c=>{c.textContent="";c.className="bc";c.disabled=false});bm.textContent="1.00x";bgo.textContent="Pick a tile";bgo.disabled=true;gInfo()});
-  gLeave=()=>{if(on){if(safe>0)cash();else{aBal+=bet;aSave()}}};
+const GCOL=[["Red","#ff5d6c"],["Green","#35d07f"],["Violet","#a77bff"],["Yellow","#ffd34d"]];
+const gColourRun=bet=>gQuiz(bet,"colour",20,[16,11,7],()=>{const i=gRnd(4);let j;do{j=gRnd(4)}while(j===i);return{text:GCOL[i][0],color:GCOL[j][1],opts:GCOL.map(x=>x[0]),ok:j}});
+const gMathRun=bet=>gQuiz(bet,"math",30,[18,13,8],()=>{
+  const a=2+gRnd(11),c=2+gRnd(11),o=gRnd(3);let r,t;
+  if(o===0){r=a+c;t=a+" + "+c}else if(o===1){const x=Math.max(a,c),y=Math.min(a,c);r=x-y;t=x+" − "+y}else{r=a*c;t=a+" × "+c}
+  const set=new Set([r]);while(set.size<4){const d=r+gRnd(9)-4;if(d>=0)set.add(d)}
+  const opts=[...set].sort(()=>Math.random()-.5);return{text:t,opts:opts.map(String),ok:opts.indexOf(r)}});
+function gBoomRun(bet){
+  const b=$("#gboard");b.className="";b.innerHTML='<div class="bgrid b3" id="bg"></div>';
+  const bg=$("#bg"),cells=[],DUR=20000;let score=0,t=0,cur=-1,hideAt=0,spawnAt=300;
+  const clear=()=>{if(cur>=0){cells[cur].textContent="";cells[cur].className="bc";cur=-1}};
+  const info=()=>gStat("Time: "+Math.ceil((DUR-t)/1000)+"s | Score: "+score);
+  for(let i=0;i<9;i++){const c=document.createElement("button");c.type="button";c.className="bc";
+    c.addEventListener("click",()=>{if(i!==cur)return;score=c.dataset.k==="g"?score+1:Math.max(0,score-2);clear();spawnAt=t+150;info()});
+    cells.push(c);bg.appendChild(c)}
+  info();
+  gTimer=setInterval(()=>{t+=100;
+    if(t>=DUR){clearInterval(gTimer);clear();cells.forEach(c=>{c.disabled=true});
+      const m=score>=10?3:score>=7?2:score>=4?1:0;gInfo("Score "+score+". "+gPay(bet,m)+" | Best: "+gSave("boom",score,false));return}
+    if(cur>=0&&t>=hideAt){clear();spawnAt=t+200}
+    if(cur<0&&t>=spawnAt){const i=gRnd(9),g=Math.random()<.72;cur=i;cells[i].dataset.k=g?"g":"b";cells[i].textContent=g?"💎":"💣";cells[i].className="bc "+(g?"ok":"bad");hideAt=t+Math.max(550,950-t/40)}
+    info()},100);
 }
+const gColour=()=>gStake("Pick your bet. For 20 seconds tap the colour the word is written in, not what it says. 16 points pays 3x, 11 pays 2x, 7 returns your bet. A wrong tap costs a point. Leaving the game loses the bet.",gColourRun);
+const gMath=()=>gStake("Pick your bet. Solve as many sums as you can in 30 seconds. 18 points pays 3x, 13 pays 2x, 8 returns your bet. A wrong answer costs a point. Leaving the game loses the bet.",gMathRun);
+const gBoom=()=>gStake("Pick your bet. For 20 seconds tap the gems 💎 as they pop up and avoid the bombs 💣. 10 points pays 3x, 7 pays 2x, 4 returns your bet. A bomb costs 2 points. Leaving the game loses the bet.",gBoomRun);
 $("#gback").addEventListener("click",gMenu);
 $("#gagain").addEventListener("click",()=>gOpen(gCur));
 gMenu();
