@@ -75,6 +75,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 .seg button{flex:1;padding:10px;border-radius:999px;border:1px solid var(--line);background:none;color:var(--dim);font:600 .85rem var(--body);cursor:pointer}
 .seg button.on{color:var(--ink);border-color:var(--glow)}
 .note{color:var(--dim);font-size:.78rem;line-height:1.5;margin:14px 0 0}
+.goal{margin:16px 0 0}.goal .gt{display:flex;justify-content:space-between;font-size:.78rem;color:var(--dim);margin-bottom:6px}.goal .gb{height:6px;border-radius:999px;background:var(--line);overflow:hidden}.goal .gb i{display:block;height:100%;width:0;background:var(--ink);border-radius:999px;transition:width .4s}.goal.done .gt{color:var(--ok)}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .gap{margin-top:10px}
 .ver{position:fixed;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 6px);font-size:.62rem;color:#444;pointer-events:none;z-index:1}
@@ -318,6 +319,8 @@ main{padding-top:86px}
         <div class="field"><input id="abet" type="number" inputmode="numeric" min="10" step="1" value="50" placeholder=" "><label for="abet">Bet amount (coins)</label><button type="button" class="sb m" data-s="-1" aria-label="Decrease bet">−</button><button type="button" class="sb p" data-s="1" aria-label="Increase bet">+</button><span class="msg"></span></div>
         <div class="chips" id="achips"><button type="button" data-a="min">Min</button><button type="button" data-a="half">Half</button><button type="button" data-a="dbl">Double</button><button type="button" data-a="max">Max</button></div>
         <button class="go" id="abtn" type="button">Place bet</button>
+        <button class="go ghost gap" id="dailybtn" type="button">Claim daily +10 coins</button>
+        <div class="goal" id="goal"><div class="gt"><span id="goalTxt">Goal: 100,000 coins</span><span id="goalPct">0%</span></div><div class="gb"><i id="goalBar"></i></div></div>
         <p class="note">No real money is used. Bet before takeoff, then cash out in time. <button class="link" id="areset" type="button">Reset coins</button></p>
       </div>
     </div>
@@ -597,6 +600,7 @@ function aBtn(){
 }
 function aUI(){
   $("#abal").textContent=aBal;
+  goalUI();
   $("#abest").textContent=aBest.toFixed(2)+"x";
   $("#abet").disabled=!!aBet;
   $("#adot").className=aPhase;$("#astat").textContent=aPhase==="wait"?"Place your bets":aPhase==="fly"?"In flight":"Flew away";
@@ -696,6 +700,26 @@ document.querySelectorAll(".sb").forEach(b=>b.addEventListener("click",()=>{cons
 $("#areset").addEventListener("click",()=>{if(aBet){toast("Finish or cancel your bet first.");return}aBal=1000;aSave();aUI();toast("Coins reset to 1000.")});
 document.addEventListener("visibilitychange",()=>{if(document.hidden)avStop();else if(view==="home"&&!$("#p-game").hidden)avStart()});
 
+// DAILY BONUS (play coins only, no cash value)
+const DAILY_COINS=10;
+function dailyKey(){return aKey()+":daily"}
+function dailyToday(){const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+$("#dailybtn").addEventListener("click",()=>{
+  let last="";try{last=localStorage.getItem(dailyKey())||""}catch(e){}
+  if(last===dailyToday()){toast("Already claimed today. Come back tomorrow.");return}
+  aBal+=DAILY_COINS;aSave();aUI();
+  try{localStorage.setItem(dailyKey(),dailyToday())}catch(e){}
+  toast("+"+DAILY_COINS+" daily coins added!");
+});
+
+// GOAL: 100,000 coins -> "Black Side Legend" badge (play coins only, no cash value)
+function goalUI(){
+  const GOAL_COINS=100000;
+  const pct=Math.min(100,Math.floor(aBal/GOAL_COINS*100)),done=aBal>=GOAL_COINS;
+  $("#goalBar").style.width=pct+"%";$("#goalPct").textContent=pct+"%";
+  $("#goalTxt").textContent=done?"Black Side Legend unlocked":"Goal: "+GOAL_COINS.toLocaleString("en-US")+" coins";
+  $("#goal").classList.toggle("done",done);
+}
 // ROUTING
 function route(u){
   if(!u){avStop();if(view==="home"||view==="verify")show("login");return}
